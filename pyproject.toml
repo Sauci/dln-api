@@ -25,7 +25,10 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 include = [
-    "dln_api"
+    "dln_api",
+    "dln_api.spi",
+    "dln_api.spi.master",
+    "dln_api.spi.slave"
 ]
 
 [tool.setuptools.dynamic]
