@@ -1,7 +1,10 @@
 import ctypes
 import enum
 
+from .constants import *
+
 DLN_HW_TYPE = ctypes.c_uint32
+DLN_MSG_ID = ctypes.c_uint16
 
 
 class DLN_RESULT(ctypes.c_uint16):
@@ -105,25 +108,29 @@ HWND = ctypes.c_void_p
 UINT = ctypes.c_uint
 DWORD = ctypes.c_ulong
 
-callback_function_prototype = ctypes.WINFUNCTYPE(None, HDLN, ctypes.c_void_p)
+callback_function_prototype = ctypes.CFUNCTYPE(None, HDLN, ctypes.c_void_p)
 
 
 class callback(ctypes.Structure):
+    _pack_ = 1
     _fields_ = [('function', callback_function_prototype),
-                ('context', ctypes.py_object)] # originally ctypes.c_void_p
+                ('context', ctypes.py_object)]  # originally ctypes.c_void_p
 
 
 class window_message(ctypes.Structure):
+    _pack_ = 1
     _fields_ = [('handle', HWND),
                 ('message', UINT)]
 
 
 class thread_message(ctypes.Structure):
+    _pack_ = 1
     _fields_ = [('thread', DWORD),
                 ('message', UINT)]
 
 
 class labview_event(ctypes.Structure):
+    _pack_ = 1
     _fields_ = [('eventRef', ctypes.c_void_p)]
 
 
@@ -150,3 +157,21 @@ class DLN_NOTIFICATION_TYPE(enum.Enum):
     DLN_NOTIFICATION_TYPE_WINDOW_MESSAGE = 0x03
     DLN_NOTIFICATION_TYPE_THREAD_MESSAGE = 0x04
     DLN_NOTIFICATION_TYPE_LAB_VIEW_EVENT = 0x05
+
+
+class DLN_MSG_HEADER(ctypes.Structure):
+    _pack_ = 1
+    _fields_ = [('size', ctypes.c_uint16),
+                ('msgId', DLN_MSG_ID),
+                ('echoCounter', ctypes.c_uint16),
+                ("handle", HDLN)]
+
+
+class DLN_SPI_SLAVE_DATA_RECEIVED_EV(ctypes.Structure):
+    _pack_ = 1
+    _fields_ = [('header', DLN_MSG_HEADER),
+                ('eventCount', ctypes.c_uint16),
+                ('eventType', ctypes.c_uint8),
+                ('port', ctypes.c_uint8),
+                ('size', ctypes.c_uint16),
+                ("buffer", (ctypes.c_uint8 * DLN_SPI_SLAVE_BUFFER_SIZE))]

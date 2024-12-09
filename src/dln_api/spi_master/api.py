@@ -1,5 +1,5 @@
-from dln_api.api import DLNApi
-from dln_api.types import *
+from ..api import DLNApi
+from ..types import *
 
 
 class SPIMaster(DLNApi):

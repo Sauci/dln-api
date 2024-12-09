@@ -26,9 +26,8 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 include = [
     "dln_api",
-    "dln_api.spi",
-    "dln_api.spi.master",
-    "dln_api.spi.slave"
+    "dln_api.spi_master",
+    "dln_api.spi_slave"
 ]
 
 [tool.setuptools.dynamic]
