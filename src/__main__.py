@@ -13,12 +13,17 @@ if __name__ == '__main__':
 
 
     class SPI(SPISlave):
+        pass
+
         def on_callback_notification(self,
                                      event_count: int,
                                      event_type: int,
                                      port: int,
                                      buffer: bytearray) -> None:
-            print(f'event_count = {event_count}, event_type = {event_type}, port = {port}, buffer = {bytearray_to_str(buffer)}')
+            print(f'event_count = {event_count}, '
+                  f'event_type = {event_type}, '
+                  f'port = {port}, '
+                  f'buffer = {bytearray_to_str(buffer)}')
 
 
     with SPI(port=0) as dln:
@@ -28,9 +33,6 @@ if __name__ == '__main__':
         dln.c_pol = 0
         dln.c_pha = 0
         dln.event_size = 1
-
-        # # dln.load_reply(size=1, buffer=bytearray((1,)))
-
         dln.event = True
         dln.idle_event = False
         dln.ss_rise_event = False

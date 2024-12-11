@@ -1,3 +1,4 @@
+import abc
 import os.path
 
 from .errors import DLNException
@@ -10,7 +11,7 @@ def bytearray_to_str(byte_array: bytearray) -> str:
     return ' '.join('{:02X}'.format(b) for b in byte_array)
 
 
-class DLNApi(object):
+class DLNApi(abc.ABC):
     """
     DLNApi is the base class for all different DLN APIs, such as the SPI-master API, SPI-slave API and so on.
     """
@@ -27,38 +28,19 @@ class DLNApi(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._library.DlnCloseHandle(self._handle)
 
+    @abc.abstractmethod
     def on_callback_notification(self,
                                  event_count: int,
                                  event_type: int,
                                  port: int,
                                  buffer: bytearray) -> None:
-        print(f'{event_count}, {event_type}, {port}, {buffer}')
-
-    @property
-    def handle(self) -> HDLN:
-        return self._handle
+        pass
 
     @staticmethod
     @callback_function_prototype
-    def _callback_function(handle: HDLN, context: ctypes.py_object) -> None:
-        self: DLNApi = ctypes.cast(context, ctypes.py_object).value
-        buffer = (ctypes.c_uint8 * DLN_MAX_MSG_SIZE)()
-        event = DLN_SPI_SLAVE_DATA_RECEIVED_EV.from_buffer(buffer)
-        while True:
-            api_result = DLN_RESULT(self._library.DlnGetMessage(self._handle, buffer, DLN_MAX_MSG_SIZE))
-            if dln_succeeded(api_result):
-                self.on_callback_notification(event.eventCount,
-                                              event.eventType,
-                                              event.port,
-                                              bytearray(event.buffer[0:event.size]))
-            else:
-                break
-
-        # print(bytearray_to_str(self.get_message(DLN_MAX_MSG_SIZE)))
-        # while self._library.DlnGetMessage(handle, buffer, DLN_MAX_MSG_SIZE) == 0:
-        #     print(event.buffer[0], handle)
-
-        # self.on_callback_notification(handle)
+    @abc.abstractmethod
+    def _callback_function(_: HDLN, context: ctypes.py_object) -> None:
+        pass
 
     @property
     def device_sn(self) -> int:

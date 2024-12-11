@@ -1,3 +1,5 @@
+import abc
+
 from ..api import DLNApi
 from ..errors import DLNException
 from ..types import *
@@ -9,6 +11,30 @@ class SPISlave(DLNApi):
                  port: int = 0):
         super().__init__(shared_library_path=shared_library_path)
         self._port = ctypes.c_uint8(port)
+
+    @abc.abstractmethod
+    def on_callback_notification(self,
+                                 event_count: int,
+                                 event_type: int,
+                                 port: int,
+                                 buffer: bytearray) -> None:
+        pass
+
+    @staticmethod
+    @callback_function_prototype
+    def _callback_function(_: HDLN, context: ctypes.py_object) -> None:
+        self: DLNApi = ctypes.cast(context, ctypes.py_object).value
+        buffer = (ctypes.c_uint8 * DLN_MAX_MSG_SIZE)()
+        event = DLN_SPI_SLAVE_DATA_RECEIVED_EV.from_buffer(buffer)
+        while True:
+            api_result = DLN_RESULT(self._library.DlnGetMessage(self._handle, buffer, DLN_MAX_MSG_SIZE))
+            if dln_succeeded(api_result):
+                self.on_callback_notification(event.eventCount,
+                                              event.eventType,
+                                              event.port,
+                                              bytearray(event.buffer[0:event.size]))
+            else:
+                break
 
     @property
     def c_pol(self) -> int:
