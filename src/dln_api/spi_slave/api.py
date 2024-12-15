@@ -7,9 +7,8 @@ from ..types import *
 
 class SPISlave(DLNApi):
 
-    def __init__(self, shared_library_path='C:\\Program Files\\Diolan\\DLN\\redistributable\\direct_library\\dln.dll',
-                 port: int = 0):
-        super().__init__(shared_library_path=shared_library_path)
+    def __init__(self, port: int = 0):
+        super().__init__()
         self._port = ctypes.c_uint8(port)
 
     @abc.abstractmethod

@@ -1,5 +1,7 @@
 import abc
-import os.path
+import os
+import platform
+import sys
 
 from .errors import DLNException
 from .types import *
@@ -16,8 +18,22 @@ class DLNApi(abc.ABC):
     DLNApi is the base class for all different DLN APIs, such as the SPI-master API, SPI-slave API and so on.
     """
 
-    def __init__(self, shared_library_path: str):
-        self._library = ctypes.cdll.LoadLibrary(os.path.abspath(shared_library_path))
+    def __init__(self):
+        if sys.platform in ('linux', 'linux2'):
+            extension = 'so'
+        elif sys.platform == 'win32':
+            extension = 'dll'
+        else:
+            raise Exception(f'Unsupported platform {sys.platform}')
+
+        if platform.architecture()[0] == '64bit':
+            name = 'x64'
+        elif platform.architecture()[0] == '32bit':
+            name = 'x86'
+        else:
+            raise Exception(f'Unsupported architecture {platform.architecture()[0]}')
+
+        self._library = ctypes.cdll.LoadLibrary(os.path.join(os.path.dirname(__file__), 'libs', f'{name}.{extension}'))
         self._handle = HDLN()
         self._message_buffer = None
 

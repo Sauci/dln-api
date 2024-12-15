@@ -1,6 +1,6 @@
 [project]
 name = "dln-api"
-version = "0.1.1"
+version = "0.1.2"
 dynamic = ["dependencies"]
 description = "DLN API package"
 readme = { file = "README.md", content-type = "text/markdown" }
@@ -26,9 +26,13 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 include = [
     "dln_api",
+    "dln_api.libs",
     "dln_api.spi_master",
     "dln_api.spi_slave"
 ]
+
+[tool.setuptools.package-data]
+"dln_api.libs" = ["*.dll"]
 
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.txt"] }
