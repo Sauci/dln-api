@@ -7,6 +7,13 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+      - uses: addnab/docker-run-action@v3
+        with:
+          image: gcc:latest
+          options: -v ${{ github.workspace }}:/usr/src/dln-api
+          run: |
+            cd /usr/src/dln-api/src/dln_api/libs
+            gcc -shared -o x64.so -Wl,--whole-archive x64.a -Wl,--no-whole-archive x64.a
       - uses: actions/setup-python@v5
         with:
           python-version: "3.10"

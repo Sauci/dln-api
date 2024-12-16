@@ -32,11 +32,10 @@ include = [
 ]
 
 [tool.setuptools.package-data]
-"dln_api.libs" = ["*.dll"]
+"dln_api.libs" = ["*.dll", "*.so"]
 
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.txt"] }
-
 
 [project.scripts]
 uhil-api-server = "server.cli:main"
