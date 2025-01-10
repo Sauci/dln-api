@@ -44,14 +44,6 @@ class DLNApi(abc.ABC):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._library.DlnCloseHandle(self._handle)
 
-    @abc.abstractmethod
-    def on_callback_notification(self,
-                                 event_count: int,
-                                 event_type: int,
-                                 port: int,
-                                 buffer: bytearray) -> None:
-        pass
-
     @staticmethod
     @callback_function_prototype
     @abc.abstractmethod

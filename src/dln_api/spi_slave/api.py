@@ -54,7 +54,8 @@ class SPISlave(DLNApi):
         :param c_pol: The clock polarity (CPOL) value. Can be 0 or 1.
         """
         c_pol = ctypes.c_uint8(c_pol)
-        if api_result := DLN_RESULT(self._library.DlnSpiSlaveSetCpol(self._handle, self._port, c_pol)):
+        api_result = DLN_RESULT(self._library.DlnSpiSlaveSetCpol(self._handle, self._port, c_pol))
+        if not dln_succeeded(api_result):
             raise DLNException(api_result)
 
     @property

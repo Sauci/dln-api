@@ -1,95 +1,128 @@
 from ..api import DLNApi
+from ..errors import DLNException
 from ..types import *
 
 
 class SPIMaster(DLNApi):
 
-    def get_c_pol(self, port: int = 0) -> int:
-        port = ctypes.c_uint8(port)
+    def __init__(self, port: int = 0):
+        super().__init__()
+        self._port = ctypes.c_uint8(port)
+
+    @property
+    def c_pol(self) -> int:
         c_pol = ctypes.c_uint8()
-        if api_result := DLN_RESULT(self._library.DlnSpiMasterGetCpol(self._handle, port, ctypes.byref(c_pol))):
-            raise RuntimeError(str(api_result))
+        api_result = DLN_RESULT(self._library.DlnSpiMasterGetCpol(self._handle, self._port, ctypes.byref(c_pol)))
+        if not dln_succeeded(api_result):
+            raise DLNException(api_result)
         return c_pol.value
 
-    def set_c_pol(self, port: int = 0, c_pol: int = 0):
-        port = ctypes.c_uint8(port)
+    @c_pol.setter
+    def c_pol(self, c_pol: int = 0):
         c_pol = ctypes.c_uint8(c_pol)
-        if api_result := DLN_RESULT(self._library.DlnSpiMasterSetCpol(self._handle, port, c_pol)):
-            raise RuntimeError(str(api_result))
+        api_result = DLN_RESULT(self._library.DlnSpiMasterSetCpol(self._handle, self._port, c_pol))
+        if not dln_succeeded(api_result):
+            raise DLNException(api_result)
 
-    def get_spi_master_frequency(self, port: int = 0) -> int:
-        frequency = ctypes.c_uint32()
-        port = ctypes.c_uint8(port)
-        if api_result := DLN_RESULT(
-                self._library.DlnSpiMasterGetFrequency(self._handle, port, ctypes.byref(frequency))):
-            raise RuntimeError(str(api_result))
-        return frequency.value
+    @property
+    def c_pha(self) -> int:
+        c_pha = ctypes.c_uint8()
+        api_result = DLN_RESULT(self._library.DlnSpiMasterGetCpha(self._handle, self._port, ctypes.byref(c_pha)))
+        if not dln_succeeded(api_result):
+            raise DLNException(api_result)
+        return c_pha.value
 
-    def set_spi_master_frequency(self, port: int = 0, frequency: int = 1000000):
-        port = ctypes.c_uint8(port)
-        frequency = ctypes.c_uint32(frequency)
-        actual_frequency = ctypes.c_uint32()
-        if api_result := DLN_RESULT(self._library.DlnSpiMasterSetFrequency(self._handle,
-                                                                           port,
-                                                                           frequency,
-                                                                           ctypes.byref(actual_frequency))):
-            raise RuntimeError(str(api_result))
-        if frequency.value != actual_frequency.value:
-            raise RuntimeError
+    @c_pha.setter
+    def c_pha(self, c_pha: int):
+        c_pha = ctypes.c_uint8(c_pha)
+        api_result = DLN_RESULT(self._library.DlnSpiMasterSetCpha(self._handle, self._port, c_pha))
+        if not dln_succeeded(api_result):
+            raise DLNException(api_result)
 
-    def enable(self, port: int = 0):
-        port = ctypes.c_uint8(port)
-        conflicts = ctypes.c_uint16()
-        if api_result := DLN_RESULT(self._library.DlnSpiMasterEnable(self._handle, port, ctypes.byref(conflicts))):
-            raise RuntimeError(str(api_result))
-        if conflicts.value:
-            raise RuntimeError(conflicts.value)
-
-    def set_spi_master_frame_size(self, port: int = 0, frame_size: int = 16):
-        port = ctypes.c_uint8(port)
-        frame_size = ctypes.c_uint8(frame_size)
-        if api_result := DLN_RESULT(self._library.DlnSpiMasterSetFrameSize(self._handle, port, frame_size)):
-            raise RuntimeError(str(api_result))
-
-    def set_spi_master_configuration(self, port: int = 0, frequency: int = 1000000, frame_size: int = 16) -> int:
-        port = ctypes.c_uint8(port)
-        frequency = ctypes.c_uint32(frequency)
-        frame_size = ctypes.c_uint8(frame_size)
-        actual_frequency = ctypes.c_uint32()
-        if api_result := DLN_RESULT(self._library.DlnSpiMasterSetFrequency(self._handle,
-                                                                           port,
-                                                                           frequency,
-                                                                           ctypes.byref(actual_frequency))):
-            raise RuntimeError(str(api_result))
-        if frequency.value != actual_frequency.value:
-            raise RuntimeError
-        conflicts = ctypes.c_uint16()
-        if api_result := DLN_RESULT(self._library.DlnSpiMasterEnable(self._handle, port, ctypes.byref(conflicts))):
-            raise RuntimeError(str(api_result))
-        if conflicts.value:
-            raise RuntimeError(conflicts.value)
-        if api_result := DLN_RESULT(self._library.DlnSpiMasterSetFrameSize(self._handle, port, frame_size)):
-            raise RuntimeError(str(api_result))
-        return 0
-
-    def get_spi_master_frame_size(self, port: int = 0) -> int:
+    @property
+    def frame_size(self) -> int:
         frame_size = ctypes.c_uint8()
-        port = ctypes.c_uint8(port)
-        if api_result := DLN_RESULT(
-                self._library.DlnSpiMasterGetFrameSize(self._handle, port, ctypes.byref(frame_size))):
-            raise RuntimeError(str(api_result))
+        api_result = DLN_RESULT(self._library.DlnSpiMasterGetFrameSize(self._handle,
+                                                                       self._port,
+                                                                       ctypes.byref(frame_size)))
+        if not dln_succeeded(api_result):
+            raise DLNException(api_result)
         return frame_size.value
 
-    def full_duplex_transaction(self, tx_data: bytearray, port: int = 0) -> bytearray:
-        port = ctypes.c_uint8(port)
+    @frame_size.setter
+    def frame_size(self, frame_size: int = 16):
+        frame_size = ctypes.c_uint8(frame_size)
+        api_result = DLN_RESULT(self._library.DlnSpiMasterSetFrameSize(self._handle, self._port, frame_size))
+        if not dln_succeeded(api_result):
+            raise DLNException(api_result)
+
+    @property
+    def frequency(self) -> int:
+        frequency = ctypes.c_uint32()
+        api_result = DLN_RESULT(
+            self._library.DlnSpiMasterGetFrequency(self._handle, self._port, ctypes.byref(frequency)))
+        if not dln_succeeded(api_result):
+            raise DLNException(api_result)
+        return frequency.value
+
+    @frequency.setter
+    def frequency(self, frequency: int = 1000000):
+        frequency = ctypes.c_uint32(frequency)
+        actual_frequency = ctypes.c_uint32()
+        api_result = DLN_RESULT(self._library.DlnSpiMasterSetFrequency(self._handle,
+                                                                       self._port,
+                                                                       frequency,
+                                                                       ctypes.byref(actual_frequency)))
+        if not dln_succeeded(api_result):
+            raise DLNException(api_result)
+        if frequency.value != actual_frequency.value:
+            raise RuntimeError
+
+    def read_write(self, tx_data: bytearray) -> bytearray:
         tx_data = (ctypes.c_uint8 * len(tx_data))(*tx_data)
         rx_data = (ctypes.c_uint8 * len(tx_data))(*([0] * len(tx_data)))
-        if len(tx_data) <= 8:
-            dln_function = self._library.DlnSpiMasterReadWrite
-        elif len(tx_data) <= 16:
-            dln_function = self._library.DlnSpiMasterReadWrite16
-        else:
-            raise ValueError(len(tx_data))
-        if api_result := DLN_RESULT(dln_function(self._handle, port, ctypes.c_uint16(len(tx_data)), tx_data, rx_data)):
-            raise RuntimeError(str(api_result))
+        api_result = DLN_RESULT(self._library.DlnSpiMasterReadWrite(self._handle,
+                                                                    self._port,
+                                                                    ctypes.c_uint16(len(tx_data)),
+                                                                    ctypes.byref(tx_data),
+                                                                    ctypes.byref(rx_data)))
+        if not dln_succeeded(api_result):
+            raise DLNException(api_result)
         return bytearray(rx_data)
+
+    def read_write_ss(self, tx_data: bytearray, ss: int) -> bytearray:
+        tx_data = (ctypes.c_uint8 * len(tx_data))(*tx_data)
+        rx_data = (ctypes.c_uint8 * len(tx_data))(*([0] * len(tx_data)))
+        api_result = DLN_RESULT(self._library.DlnSpiMasterReadWriteSS(self._handle,
+                                                                      self._port,
+                                                                      ctypes.c_uint8(ss),
+                                                                      ctypes.c_uint16(len(tx_data)),
+                                                                      ctypes.byref(tx_data),
+                                                                      ctypes.byref(rx_data)))
+        if not dln_succeeded(api_result):
+            raise DLNException(api_result)
+        return bytearray(rx_data)
+
+    @property
+    def enabled(self):
+        enable = ctypes.c_uint8()
+        api_result = DLN_RESULT(self._library.DlnSpiMasterIsEnabled(self._handle, self._port, ctypes.byref(enable)))
+        if not dln_succeeded(api_result):
+            raise DLNException(api_result)
+        return bool(enable.value)
+
+    def enable(self):
+        conflicts = ctypes.c_uint16()
+        api_result = DLN_RESULT(self._library.DlnSpiMasterEnable(self._handle, self._port, ctypes.byref(conflicts)))
+        if not dln_succeeded(api_result):
+            raise DLNException(api_result)
+        if conflicts.value:
+            raise RuntimeError(conflicts.value)
+
+    def disable(self, wait_for_transfer_completion: bool = False):
+        wait_for_transfer_completion = ctypes.c_uint8(int(wait_for_transfer_completion))
+        api_result = DLN_RESULT(self._library.DlnSpiMasterDisable(self._handle,
+                                                                  self._port,
+                                                                  wait_for_transfer_completion))
+        if not dln_succeeded(api_result):
+            raise DLNException(api_result)
