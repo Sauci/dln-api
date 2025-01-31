@@ -74,23 +74,28 @@ class DLNApi(abc.ABC):
             raise DLNException(api_result)
         return identifier.value
 
-    def open_device(self, device_number: int = 0):
+    def restart(self) -> None:
+        api_result = DLN_RESULT(self._library.DlnRestart(self._handle))
+        if not dln_succeeded(api_result):
+            raise DLNException(api_result)
+
+    def open_device(self, device_number: int = 0) -> None:
         device_number = ctypes.c_uint32(device_number)
         api_result = DLN_RESULT(self._library.DlnOpenDevice(device_number, ctypes.byref(self._handle)))
         if not dln_succeeded(api_result):
             raise DLNException(api_result)
 
-    def open_device_by_sn(self, sn: int):
+    def open_device_by_sn(self, sn: int) -> None:
         sn = ctypes.c_uint32(sn)
         if api_result := DLN_RESULT(self._library.DlnOpenDeviceBySn(sn, ctypes.byref(self._handle))):
             raise DLNException(api_result)
 
-    def open_usb_device(self):
+    def open_usb_device(self) -> None:
         api_result = DLN_RESULT(self._library.DlnOpenUsbDevice(ctypes.byref(self._handle)))
         if not dln_succeeded(api_result):
             raise DLNException(api_result)
 
-    def register_notification(self, notification_type: DLN_NOTIFICATION_TYPE):
+    def register_notification(self, notification_type: DLN_NOTIFICATION_TYPE) -> None:
         notification_struct.type = notification_type.value  # callback notification type
         notification_struct.callback.function = self._callback_function
         notification_struct.callback.context = ctypes.py_object(self)
@@ -99,7 +104,7 @@ class DLNApi(abc.ABC):
         if not dln_succeeded(api_result):
             raise DLNException(api_result)
 
-    def unregister_notification(self):
+    def unregister_notification(self) -> None:
         api_result = DLN_RESULT(self._library.DlnUnregisterNotification(self._handle))
         if not dln_succeeded(api_result):
             raise DLNException(api_result)
@@ -112,7 +117,7 @@ class DLNApi(abc.ABC):
             raise DLNException(api_result)
         return bytearray(message_buffer)
 
-    def send_message(self):
+    def send_message(self) -> None:
         data = ctypes.c_uint16(15)
         api_result = DLN_RESULT(self._library.DlnSendMessage(ctypes.byref(data)))
         if not dln_succeeded(api_result):
